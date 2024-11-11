@@ -11,7 +11,7 @@ export default function MyButton(props) {
     <View style={styles.container}>
       <TouchableOpacity 
         style={styles.button}
-        onPress={() => Alert.alert('Botão pressionado!')}
+        onPress={props.onPress}
       >
         <Text style={styles.buttonText}>{props.title}</Text>
       </TouchableOpacity>
