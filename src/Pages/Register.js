@@ -1,50 +1,65 @@
 import React, { useState } from "react";
-import { useNavigation } from '@react-navigation/native';
-import { Image, Text, View, Alert, StyleSheet } from "react-native";
+import { Image, Text, View, Alert, StyleSheet, ActivityIndicator, Button } from "react-native";
 import TextField from "../Componentes/TextField";
 import {
   useFonts,
   Montserrat_400Regular,
   Montserrat_700Bold,
 } from "@expo-google-fonts/montserrat";
-import MyButton from "../Componentes/Button";
 
-export default function Register() { 
-  const navigation = useNavigation();
+export default function Register() {
+  // Carregamento de fontes
   const [fontsLoaded] = useFonts({
     Montserrat_400Regular,
     Montserrat_700Bold,
   });
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+
+  const initialForm = {
+    nameUser: "",
+    email: "",
+    passWord: "",
+  };
+
+  const [formState, setFormState] = useState(initialForm);
+
+  // Função para atualizar o estado de um campo específico
+  const handleChange = (name, value) => {
+    setFormState({ ...formState, [name]: value });
+  };
 
   const handleRegister = async () => {
+    console.log("Valores dos campos:", formState);
+
     try {
       const response = await fetch("http://10.92.198.32:8080/api/user/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          name,
-          email,
-          password,
-        }),
+        body: JSON.stringify(formState),
       });
 
+      console.log("Dados enviados:", formState);
+
+      const responseData = await response.json(); // Captura a resposta JSON
+      
+      console.log("Resposta da API:", responseData);
+
       if (response.ok) {
-        Alert.alert("Success", "Registration completed successfully!");
-        navigation.navigate("Login"); 
+        Alert.alert("Sucesso", "Registro realizado com sucesso!");
       } else {
-        Alert.alert("Error", "Failed to register. Please try again.");
+        console.log("Erro na resposta:", responseData);
+        Alert.alert("Erro", "Falha ao registrar. Verifique os dados e tente novamente.");
       }
     } catch (error) {
-      Alert.alert("Error", "Failed to register. Please try again.");
-      console.error(error);
+      console.error("Erro na requisição:", error);
+      Alert.alert("Erro", "Falha ao registrar. Tente novamente.");
     }
   };
 
+  if (!fontsLoaded) {
+    return <ActivityIndicator size="large" color="#0000ff" />;
+  }
 
   return (
     <View style={styles.container}>
@@ -53,17 +68,25 @@ export default function Register() {
         source={require("../Assets/Images/logoImage.png")}
       />
       <Text style={styles.logo}>SIGN UP</Text>
-      <TextField placeholder="Name" value={name} onChangeText={setName} />
-      <TextField placeholder="Email" value={email} onChangeText={setEmail} />
+      <TextField
+        placeholder="Name"
+        value={formState.nameUser}
+        onChangeText={(text) => handleChange("nameUser", text)}
+      />
+      <TextField
+        placeholder="Email"
+        value={formState.email}
+        onChangeText={(text) => handleChange("email", text)}
+      />
       <TextField
         placeholder="Password"
-        value={password}
-        onChangeText={setPassword}
+        value={formState.passWord}
+        onChangeText={(text) => handleChange("passWord", text)}
         secureTextEntry
       />
-      <MyButton
+      <Button
         title="Register"
-        onPress={handleRegister} 
+        onPress={handleRegister}
       />
     </View>
   );
